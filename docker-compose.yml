@@ -1,0 +1,33 @@
+version: '3'
+services:
+  ldap:
+    container_name: ldap
+    build:
+      context: openldap
+    ports:
+      - '389:389'
+    environment:
+      LDAP_DOMAIN: "example.org"
+      LDAP_ADMIN_PASSWORD: "password"
+  idp:
+    container_name: idp
+    build:
+      context: idp
+    depends_on:
+      - ldap
+    ports:
+      - 443:443
+    environment:
+      LDAP_HOST: "ldap"
+      LDAP_BINDDN: "cn=admin,dc=example,dc=org"
+      LDAP_BINDPWD: "password"
+  sp:
+    container_name: sp
+    build:
+      context: sp
+    depends_on:
+      - idp
+    ports:
+      - 10443:443
+    environment:
+      IDP_HOST: "idp"
